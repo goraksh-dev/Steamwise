@@ -38,11 +38,12 @@ ROOT = Path(__file__).parent
 DATA_PATH = ROOT / "data" / "steam_games.csv"
 
 @st.cache_data(show_spinner=False)
-def get_data(uploaded_file, local_path, usd_to_inr):
-    if uploaded_file is not None:
-        return load_games(uploaded_file, usd_to_inr)
-    if Path(local_path).exists():
-        return load_games(local_path, usd_to_inr)
+def get_data(local_path, usd_to_inr):
+    path = Path(local_path)
+
+    if path.exists():
+        return load_games(path, usd_to_inr)
+
     return pd.DataFrame()
 
 with st.sidebar:
@@ -51,14 +52,13 @@ with st.sidebar:
     page = st.radio("NAVIGATION", ["Dashboard", "Game Recommender", "Price Analysis", "Game Explorer", "About Project"])
     st.divider()
     st.markdown("### Dataset")
-    uploaded = st.file_uploader("Upload Steam CSV", type=["csv"])
-    st.caption("Loaded dataset: your 308-game CSV • prices converted from USD to INR.")
+    st.caption("Dataset: Automatically loaded from the project folder.")
     usd_to_inr = st.number_input("USD to INR exchange rate (₹ per $1)", min_value=1.0, max_value=200.0, value=88.0, step=0.5, help="Editable approximate conversion rate. Change this to match the rate you want to use.")
     st.markdown("---")
     st.caption("Python • Pandas • Streamlit • Plotly")
 
 try:
-    games = get_data(uploaded, str(DATA_PATH), usd_to_inr)
+    games = get_data(str(DATA_PATH), usd_to_inr)
 except Exception as exc:
     games = pd.DataFrame()
     st.error(f"Could not read the dataset: {exc}. Check that it is a valid CSV file.")
@@ -67,7 +67,8 @@ if games.empty:
     st.markdown("""
     <div class="sw-hero"><div class="sw-kicker">Your next great game starts here</div><div class="sw-title">STEAM<span class="sw-glow">WISE</span></div><p class="sw-sub">Your personal Steam discovery and price intelligence dashboard.</p></div>
     """, unsafe_allow_html=True)
-    st.info("Upload your Kaggle Steam Games CSV in the sidebar, or place it at `data/steam_games.csv` to activate the full dashboard.")
+    st.error(f"Dataset not found or empty. Please check that this file exists: {DATA_PATH}")
+    st.stop()
     demo = pd.DataFrame([
         {"name":"Hollow Knight","price":14.99,"rating":96,"genres":"Action; Indie; Adventure","reviews":120000,"release_year":2017,"tags":"Metroidvania; Souls-like","app_id":367520},
         {"name":"Stardew Valley","price":14.99,"rating":98,"genres":"Indie; RPG; Simulation","reviews":250000,"release_year":2016,"tags":"Farming Sim; Relaxing","app_id":413150},
