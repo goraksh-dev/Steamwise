@@ -9,12 +9,28 @@ from analytics import make_price_chart, make_genre_chart, make_rating_chart
 st.set_page_config(page_title="SteamWise", page_icon="🎮", layout="wide")
 st.markdown("""
 <style>
-.stApp {background: #0b1020; color: #edf2ff;}
-[data-testid="stSidebar"] {background: #11182b;}
-div[data-testid="stMetric"] {background:#141e34; border:1px solid #263452; padding:16px; border-radius:14px;}
-.sw-title {font-size:2.45rem;font-weight:800;letter-spacing:-1px;margin-bottom:0}
-.sw-sub {color:#a9b7d0;margin-top:0.15rem}
-div.stButton > button {border-radius:10px;font-weight:650}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+:root { --sw-line:rgba(148,163,184,.16); --sw-muted:#9aa8c4; --sw-cyan:#42e8d2; }
+.stApp { background:radial-gradient(ellipse at 12% 0%,rgba(66,232,210,.13),transparent 32%),radial-gradient(ellipse at 92% 8%,rgba(155,140,255,.16),transparent 30%),linear-gradient(145deg,#080b16 0%,#0b1020 52%,#090d19 100%); color:#eef3ff; font-family:'DM Sans',sans-serif; }
+html,body,[class*="css"] {font-family:'DM Sans',sans-serif;}
+[data-testid="stHeader"] {background:rgba(8,11,22,.72);}
+[data-testid="stSidebar"] {background:linear-gradient(180deg,#111a2e 0%,#0c1222 100%);border-right:1px solid var(--sw-line);}
+[data-testid="stSidebar"] h2,h1,h2,h3 {font-family:'Space Grotesk',sans-serif!important;letter-spacing:-.5px;}
+div[data-testid="stMetric"] {background:linear-gradient(145deg,rgba(24,36,61,.96),rgba(15,23,42,.88));border:1px solid rgba(125,150,190,.22);padding:19px 20px;border-radius:18px;box-shadow:0 12px 35px rgba(0,0,0,.18);}
+[data-testid="stMetricLabel"] {color:#aab8d2!important;font-weight:600;}
+[data-testid="stMetricValue"] {color:#f5f8ff!important;font-family:'Space Grotesk',sans-serif;}
+.sw-hero {position:relative;overflow:hidden;padding:30px 32px;margin:4px 0 28px;border:1px solid rgba(120,150,210,.25);border-radius:24px;background:linear-gradient(112deg,rgba(20,39,62,.96),rgba(31,29,67,.91));box-shadow:0 18px 55px rgba(0,0,0,.25);}
+.sw-hero:after {content:'🎮';position:absolute;right:42px;top:12px;font-size:88px;opacity:.13;transform:rotate(-12deg);}
+.sw-kicker {color:var(--sw-cyan);text-transform:uppercase;letter-spacing:2.5px;font-size:.72rem;font-weight:800;}
+.sw-title {font-family:'Space Grotesk',sans-serif;font-size:2.8rem;font-weight:800;letter-spacing:-1.8px;margin:5px 0 2px;color:#fff;}
+.sw-sub {color:#b8c5dc;font-size:1.02rem;margin:0;max-width:680px;}
+.sw-glow {color:var(--sw-cyan);}
+.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button {border:1px solid rgba(66,232,210,.42);border-radius:12px;font-weight:700;background:linear-gradient(100deg,#1b887f,#6554c8);color:white;transition:all .18s ease;box-shadow:0 7px 22px rgba(40,190,180,.13);}
+.stButton>button:hover,.stFormSubmitButton>button:hover,.stDownloadButton>button:hover {border-color:#72fff0;transform:translateY(-1px);box-shadow:0 10px 28px rgba(66,232,210,.2);}
+div[data-testid="stDataFrame"],div[data-testid="stPlotlyChart"] {border:1px solid var(--sw-line);border-radius:16px;overflow:hidden;background:rgba(17,24,42,.55);padding:7px;}
+div[data-testid="stVerticalBlockBorderWrapper"] {background:linear-gradient(145deg,rgba(22,33,56,.92),rgba(13,20,36,.92));border:1px solid rgba(125,150,190,.2);border-radius:17px;}
+hr {border-color:rgba(148,163,184,.16)!important;}
+[data-testid="stCaptionContainer"] {color:#9aa8c4!important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -48,8 +64,9 @@ except Exception as exc:
     st.error(f"Could not read the dataset: {exc}. Check that it is a valid CSV file.")
 
 if games.empty:
-    st.markdown('<p class="sw-title">SteamWise</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sw-sub">Your personal Steam discovery and price intelligence dashboard.</p>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="sw-hero"><div class="sw-kicker">Your next great game starts here</div><div class="sw-title">STEAM<span class="sw-glow">WISE</span></div><p class="sw-sub">Your personal Steam discovery and price intelligence dashboard.</p></div>
+    """, unsafe_allow_html=True)
     st.info("Upload your Kaggle Steam Games CSV in the sidebar, or place it at `data/steam_games.csv` to activate the full dashboard.")
     demo = pd.DataFrame([
         {"name":"Hollow Knight","price":14.99,"rating":96,"genres":"Action; Indie; Adventure","reviews":120000,"release_year":2017,"tags":"Metroidvania; Souls-like","app_id":367520},
@@ -72,8 +89,13 @@ if games.empty:
     st.stop()
 
 stats = summarize_games(games)
-st.markdown('<p class="sw-title">SteamWise <span style="color:#7c9cff">/</span></p>', unsafe_allow_html=True)
-st.markdown('<p class="sw-sub">Discover smarter. Play better. Find your next favourite game.</p>', unsafe_allow_html=True)
+st.markdown("""
+<div class="sw-hero">
+  <div class="sw-kicker">Your next great game starts here</div>
+  <div class="sw-title">STEAM<span class="sw-glow">WISE</span></div>
+  <p class="sw-sub">Discover smarter. Play better. Explore your Steam catalogue, compare prices and find games that fit your style.</p>
+</div>
+""", unsafe_allow_html=True)
 
 if page == "Dashboard":
     st.subheader("Your gaming market at a glance")
